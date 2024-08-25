@@ -1,0 +1,237 @@
+#WEATHER FORECAST APP #HTML
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="weather-app">
+        <header class="header">
+            <h1>Weather Forecast</h1>
+            <div class="location">
+                <input type="text" placeholder="Enter location" id="location-input">
+                <button id="search-button">Search</button>
+            </div>
+        </header>
+        <div class="current-weather">
+            <h2 class="location-name">Location Name</h2>
+            <div class="weather-info">
+                <img src="weather-icon.png" alt="Weather Icon" class="weather-icon">
+                <span class="temperature">25°C</span>
+                <span class="description">Sunny</span>
+            </div>
+        </div>
+        <div class="forecast">
+            <h2>5-Day Forecast</h2>
+            <div class="forecast-item">
+                <span class="day">Monday</span>
+                <img src="forecast-icon.png" alt="Forecast Icon" class="forecast-icon">
+                <span class="temperature">20°C</span>
+            </div>
+            <!-- Repeat for other days -->
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+#CSS
+
+body, h1, h2, p {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+ Basic styling 
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+ Main container 
+.weather-app {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+ Header styling 
+.header {
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.location {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#location-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#search-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#search-button:hover {
+    background-color: #0056b3;
+}
+
+ Current weather styling 
+.current-weather {
+    margin-bottom: 20px;
+}
+
+.location-name {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.weather-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.weather-icon {
+    width: 100px;
+    height: 100px;
+}
+
+.temperature {
+    font-size: 2em;
+    margin: 10px 0;
+}
+
+.description {
+    font-size: 1.2em;
+    color: #666;
+}
+
+ Forecast styling 
+.forecast {
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.forecast h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.forecast-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.forecast-item img {
+    width: 50px;
+    height: 50px;
+}
+
+.day {
+    font-size: 1.2em;
+    margin-right: 10px;
+}
+
+.temperature {
+    font-size: 1.2em;
+}
+
+
+#JAVASCRIPT
+
+// script.js
+
+const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
+
+document.getElementById('search-button').addEventListener('click', fetchWeatherData);
+document.getElementById('location-input').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        fetchWeatherData();
+    }
+});
+
+async function fetchWeatherData() {
+    const location = document.getElementById('location-input').value.trim();
+    if (!location) return;
+
+    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&units=metric&appid=${apiKey}`;
+
+    try {
+        // Fetch current weather data
+        const currentWeatherResponse = await fetch(currentWeatherUrl);
+        const currentWeatherData = await currentWeatherResponse.json();
+
+        if (currentWeatherData.cod !== 200) {
+            alert('Location not found');
+            return;
+        }
+
+        // Update current weather section
+        document.getElementById('location-name').textContent = currentWeatherData.name;
+        document.getElementById('temperature').textContent = `${Math.round(currentWeatherData.main.temp)}°C`;
+        document.getElementById('description').textContent = currentWeatherData.weather[0].description;
+        document.getElementById('weather-icon').src = `http://openweathermap.org/img/wn/${currentWeatherData.weather[0].icon}.png`;
+
+        // Fetch forecast data
+        const forecastResponse = await fetch(forecastUrl);
+        const forecastData = await forecastResponse.json();
+
+        // Update forecast section
+        const forecastContainer = document.getElementById('forecast-container');
+        forecastContainer.innerHTML = '';
+
+        forecastData.list.slice(0, 5).forEach(item => {
+            const date = new Date(item.dt_txt);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+            const temp = Math.round(item.main.temp);
+            const icon = `http://openweathermap.org/img/wn/${item.weather[0].icon}.png`;
+
+            const forecastItem = document.createElement('div');
+            forecastItem.className = 'forecast-item';
+            forecastItem.innerHTML = `
+                <span class="day">${dayName}</span>
+                <img src="${icon}" alt="Forecast Icon" class="forecast-icon">
+                <span class="temperature">${temp}°C</span>
+            `;
+
+            forecastContainer.appendChild(forecastItem);
+        });
+
+    } catch (error) {
+        console.error('Error fetching weather data:', error);
+        alert('Error fetching weather data');
+    }
+}
